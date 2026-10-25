@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Pinterest Clone</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 
@@ -15,6 +15,11 @@
       <img src="https://i.pinimg.com/originals/d3/d1/75/d3d175e560ae133f1ed5cd4ec173751a.png" alt="pin logo"
         class="img1" />
       <p class="header">Login your account</p>
+
+      <% if(error.length > 0){ %>
+        <p class="error"> <%= error %></p>
+      <% } %>
+
       <form action="/login" method="post">
         <input type="text" name="username" placeholder="Username" class="detail" required /><br />
         <input type="password" name="password" placeholder="Password" class="detail" required />
