@@ -15,8 +15,10 @@
     "http-errors": "~1.6.3",
     "mongoose": "^9.11.3",
     "morgan": "~1.9.1",
+    "multer": "^2.5.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "passport-local-mongoose": "^9.2.1"
+    "passport-local-mongoose": "^9.2.1",
+    "uuid": "^14.0.3"
   }
 }
