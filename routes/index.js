@@ -13,7 +13,7 @@ router.get('/', function (req, res, next) {
 });
 
 router.get('/login', function (req, res, next) {
-  res.render('login', {error: req.flash('error')});
+  res.render('login', { error: req.flash('error') });
 });
 
 router.get('/feed', async function (req, res, next) {
@@ -21,10 +21,10 @@ router.get('/feed', async function (req, res, next) {
 });
 
 router.post('/uploads', isLoggedIn, upload.single('file'), async function (req, res, next) {
-  if(!req.file){
+  if (!req.file) {
     return res.status(404).send("no files were given");
   }
-  const user = await userModel.findOne({username: req.session.passport.user});
+  const user = await userModel.findOne({ username: req.session.passport.user });
   const post = await postModel.create({
     image: req.file.filename,
     imageText: req.body.filecaption,
@@ -36,11 +36,39 @@ router.post('/uploads', isLoggedIn, upload.single('file'), async function (req, 
 });
 
 router.get('/profile', isLoggedIn, async function (req, res, next) {
-  const user = await userModel.findOne({
-    username: req.session.passport.user
-  }).populate("posts");
-  res.render('profile',{user});
-})
+  try {
+    const user = await userModel
+      .findOne({ username: req.session.passport.user })
+      .populate("posts");
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    res.render('profile', { user });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/profile/picture', isLoggedIn, upload.single('dp'), async function(req, res, next){
+  try{
+    if(!req.file){
+      return res.status(400).send("No profile picture selected");
+    }
+    const user = await userModel.findOne({ username: req.session.passport.user })
+
+    if(!user){
+      return res.status(404).send("User not found");
+    }
+    user.dp = 'images/uploads/' + req.file.filename;
+    await user.save();
+
+    res.redirect('/profile');
+  }
+  catch(err){
+    next(err);
+  }
+});
 
 router.post('/register', function (req, res) {
   const { username, email, fullname } = req.body;
@@ -49,13 +77,13 @@ router.post('/register', function (req, res) {
   userModel.register(userData, req.body.password)
     .then(function () {
       passport.authenticate("local")(req, res, function () {
-        res.redirect("/profile");
+        res.redirect("/feed");
       })
     })
 })
 
 router.post('/login', passport.authenticate("local", {
-  successRedirect: '/profile',
+  successRedirect: '/feed',
   failureRedirect: '/login',
   failureFlash: true
 }), function (req, res) {
@@ -69,8 +97,8 @@ router.get('/logout', function (req, res, next) {
 })
 
 function isLoggedIn(req, res, next) {
-  if (req.isAuthenticated()) return next();
-  res.redirect('/login');
-}
+    if (req.isAuthenticated()) return next();
+    res.redirect('/login');
+  }
 
 module.exports = router;
