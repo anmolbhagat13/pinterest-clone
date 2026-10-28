@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
 
     dp: {
       type: String,
+      default: '/images/default-avatar.jpeg'
     },
 
     email: {
@@ -36,7 +37,7 @@ const userSchema = new mongoose.Schema(
     },
 
     fullname: {
-      type: String,
+      type: String, 
       required: true,
       trim: true,
     },
