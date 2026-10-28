@@ -6,54 +6,107 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
     <title>Pinterest Clone</title>
     <link rel="stylesheet" href="/stylesheets/profile.css">
+    <link rel="stylesheet" href="/stylesheets/tailwind.css">
 </head>
 
 <body>
-    <div class="containerone">
-        <div class="cardone">
-            <div class="profile-picture">
-                <img src="https://plus.unsplash.com/premium_photo-1792547928009-f2aaf1cabb14?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D"
-                    alt="">
-            </div>
-            <h2 class="name">
-                <%= user.fullname%>
-            </h2>
-            <h3 class="username">@<%= user.username %>
-            </h3>
-            <p class="tagline">Lorem ipsum dolor sit, amet consectetur adipisicing.</p>
-            <p class="description">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Consequuntur, labore.</p>
-            <a href="/logout" class="button">Logout</a>
-            <form action="/uploads" method="post" enctype="multipart/form-data">
-                <input type="text" name="filecaption" placeholder="some caption">
-                <input type="file" name="file">
-                <input type="submit">
-            </form>
-        </div>
-    </div>
-    <div class="container">
-        <div class="cards flex">
-            <% user.posts.forEach(function(post){ %>
-                <div class="card" style="width: 250px;">
-                    <img src="/images/uploads/<%= post.image %>"
-                        class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h4 class="card-title"><%= post.imageText %></h4>
-                    </div>
+    <div class="w-full mx-0">
+        <div class="cardone flex flex-col pb-[30px]">
+            <div class="profile flex gap-5 items-center  mx-[5%] mt-[3%]">
+                <div
+                    class="profile-picture w-[150px] h-[150px] overflow-hidden mb-5 border-2 border-[#15638f] rounded-full">
+                    <img src="<%= user.dp ? '/' + user.dp : '/images/default-avatar.jpeg' %>"
+                        class="w-full h-full object-cover">
                 </div>
-            <% }) %>
+                <div class="flex flex-col text-start ">
+                    <h2 class="text-3xl font-bold">
+                        <%= user.fullname%>
+                    </h2>
+                    <h3 class="text-sm mt-[1px] text-[#777] ">@<%= user.username %>
+                    </h3>
+                </div>
+            </div>
+            <div class="profile-bottom mx-[5%] flex items-start gap-5 ">
+                <a href="/profile-edit"
+                    class="w-[150px] py-2 rounded-full flex items-center justify-center gap-1 bg-[#15638f] text-[#fff] transition-all duration-200 ease-in-out hover:-translate-y-1 hover:shadow-md">
+                    Edit profile
+                </a>
+                <a href="/logout" 
+                    class="w-[150px] py-2 rounded-full bg-[#dc2626] text-[#fff] transition duration-200 ease-in-out hover:-translate-y-1 hover:shadow-md">
+                    Log Out
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-        crossorigin="anonymous"></script>
+    <div class="w-full px-5 mt-5 flex justify-end">
+        <a href="/uploads"
+            class="px-5 py-2 rounded-full bg-[#15638f] text-white font-semibold transition-all duration-200 ease-in-out hover:-translate-y-1 hover:shadow-md">
+            + Create Pin
+        </a>
+    </div>
+
+    <div class="h-screen w-full px-5 mt-4 ">
+        <div class="flex items-center justify-center gap-10 mt-5">
+            <button id="createdTab" onclick="showTab('created')"
+                class="font-semibold pb-1 border-b-2 border-black">
+                Created
+            </button>
+            <button id="savedTab" onclick="showTab('saved')"
+                class="font-semibold pb-1 border-b-2 border-transparent">
+                Saved
+            </button>
+        </div>
+
+        <div id="createdContent" class="mt-6">
+            <div class="cards flex flex-wrap gap-[19.1px] items-start w-full">
+                <% if (user.posts && user.posts.length> 0) { %>
+                    <% user.posts.forEach(function(post) { %>
+                        <div class="card post-card">
+                            <img src="/images/uploads/<%= post.image %>" class="card-img-top"
+                                alt="<%= post.imageText %>">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <%= post.imageText %>
+                                </h5>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <h5>No pins yet!</h5>
+                        <p>Upload your first image to get started.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        <div id="savedContent" class="mt-6 hidden">
+            <p class="text-center text-gray-500 py-10">
+                No saved pins yet.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tab){
+            const createdContent = document.getElementById("createdContent");
+            const savedContent = document.getElementById("savedContent");
+
+            const createdTab = document.getElementById("createdTab");
+            const savedTab = document.getElementById("savedTab");
+
+            createdContent.classList.toggle("hidden", tab !== "created");
+            savedContent.classList.toggle("hidden", tab !== "saved");
+
+            createdTab.classList.toggle("border-black", tab === "created");
+            createdTab.classList.toggle("border-transparent", tab !== "created");
+
+            savedTab.classList.toggle("border-black", tab === "saved");
+            savedTab.classList.toggle("border-transparent", tab !== "saved");
+        }
+    </script>
 </body>
 
 </html>
