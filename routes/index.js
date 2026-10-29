@@ -50,24 +50,74 @@ router.get('/profile', isLoggedIn, async function (req, res, next) {
   }
 });
 
-router.post('/profile/picture', isLoggedIn, upload.single('dp'), async function(req, res, next){
-  try{
-    if(!req.file){
-      return res.status(400).send("No profile picture selected");
-    }
-    const user = await userModel.findOne({ username: req.session.passport.user })
+router.get("/profile-edit", isLoggedIn, async function (req, res, next) {
+  try {
+    const user = await userModel.findById(req.user._id);
 
-    if(!user){
-      return res.status(404).send("User not found");
+    if (!user) {
+      return res.redirect("/login");
     }
-    user.dp = 'images/uploads/' + req.file.filename;
-    await user.save();
 
-    res.redirect('/profile');
-  }
-  catch(err){
+    res.render("profile-edit", { user });
+  } catch (err) {
     next(err);
   }
+});
+
+
+router.post("/profile-edit", isLoggedIn, (req, res, next) => {
+  upload.single("dp")(req, res, async function (err) {
+    if (err) {
+      return res.status(400).send("Image upload failed.");
+    }
+
+    try {
+      const { fullname, username, email } = req.body;
+
+      if (
+        !fullname?.trim() ||
+        !username?.trim() ||
+        !email?.trim()
+      ) {
+        return res.status(400).send("All fields are required.");
+      }
+
+      const cleanUsername = username.trim();
+      const cleanEmail = email.trim().toLowerCase();
+      const existingUser = await userModel.findOne({
+        _id: { $ne: req.user._id },
+        $or: [
+          { username: cleanUsername },
+          { email: cleanEmail }
+        ]
+      });
+
+      if (existingUser) {
+        return res.status(400).send("Username or email is already in use.");
+      }
+
+      const user = await userModel.findById(req.user._id);
+
+      if (!user) {
+        return res.redirect("/login");
+      }
+
+      user.fullname = fullname.trim();
+      user.username = cleanUsername;
+      user.email = cleanEmail;
+
+      if (req.file) {
+        user.dp = "/images/uploads/" + req.file.filename;
+      }
+
+      await user.save();
+
+      res.redirect("/profile");
+
+    } catch (error) {
+      next(error);
+    }
+  });
 });
 
 router.post('/register', function (req, res) {
@@ -97,8 +147,8 @@ router.get('/logout', function (req, res, next) {
 })
 
 function isLoggedIn(req, res, next) {
-    if (req.isAuthenticated()) return next();
-    res.redirect('/login');
-  }
+  if (req.isAuthenticated()) return next();
+  res.redirect('/login');
+}
 
 module.exports = router;
