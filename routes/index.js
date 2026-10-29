@@ -120,6 +120,10 @@ router.post("/profile-edit", isLoggedIn, (req, res, next) => {
   });
 });
 
+router.get('/create-pin', isLoggedIn, function (req, res) {
+    res.render('create-pin');
+});
+
 router.post('/register', function (req, res) {
   const { username, email, fullname } = req.body;
   const userData = new userModel({ username, email, fullname });
